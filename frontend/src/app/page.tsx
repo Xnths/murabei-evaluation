@@ -11,11 +11,10 @@ import {
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { slugfy } from "@/lib/utils";
 import { bookPage } from "../../lib/routes";
 
 export default async function Home() {
-  const books: Book[] = await api.get("/api/v1/books");
+  const books: Book[] = await api.get("/api/v1/books?page=1&page_size=9");
 
   return (
     <div className="w-screen h-full p-8">
@@ -32,7 +31,7 @@ export default async function Home() {
                 <CardDescription>{book.author}</CardDescription>
               </CardHeader>
               <CardFooter>
-                <Link href={bookPage(slugfy(book.title))}>
+                <Link href={bookPage(book.id)}>
                   <Button variant="outline">Detalhes</Button>
                 </Link>
               </CardFooter>
