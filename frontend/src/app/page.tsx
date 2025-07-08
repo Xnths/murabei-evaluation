@@ -1,6 +1,3 @@
-import { api } from "../../lib/api";
-import { Book } from "../../types/books";
-
 import {
   Card,
   CardDescription,
@@ -12,9 +9,12 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { bookPage } from "../../lib/routes";
+import { getBooks } from "../../lib/http/get-books";
 
 export default async function Home() {
-  const books: Book[] = await api.get("/api/v1/books?page=1&page_size=9");
+  const page = 1;
+  const pageSize = 9;
+  const { books } = await getBooks({ page, pageSize });
 
   return (
     <div className="w-screen h-full p-8">
