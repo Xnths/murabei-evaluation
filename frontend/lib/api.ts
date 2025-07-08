@@ -1,4 +1,4 @@
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL as string;
+const baseUrl = process.env.LOCAL_API_BASE_URL as string;
 
 type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -12,7 +12,7 @@ async function request<Response, Body = undefined>(
   path: string,
   options?: RequestOptions<Body>
 ): Promise<Response> {
-  const url = `${baseUrl}/${path}`;
+  const url = `${baseUrl}${path}`;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
