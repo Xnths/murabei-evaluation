@@ -1,20 +1,18 @@
 import json
 import sqlite3
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/", methods=["GET"])
+@app.route("/status", methods=["GET"])
 def hello_world():
-    return "Hello, World!"
+    return "online"
 
 # GET /api/v1/books - returns a list of all books
-
-
 @app.route('/api/v1/books', methods=['GET'])
 def get_books():
     # Get the page and page_size parameters from the request arguments
@@ -27,17 +25,20 @@ def get_books():
     # Return the books as a JSON response
     return jsonify(books)
 
+# GET /api/v1/books - return the book with the given id
+@app.route('/api/v1/books/<book_id>', methods=['GET'])
+def get_book(book_id):
+    books = get_book_by_id(book_id)
+
+    # Return the books as a JSON response
+    return jsonify(books)
 
 # GET /api/v1/books/author/<author> - returns a list of all books by the given author
-
-
 @app.route('/api/v1/books/author/<author_slug>', methods=['GET'])
 def get_books_by_author(author_slug):
     return jsonify(get_books_by_author_name(author_slug))
 
 # GET /api/v1/books/subject/<subject_slug> - returns a list of all books by the given subject
-
-
 @app.route('/api/v1/books/subjects', methods=['GET'])
 def get_books_by_subject():
     return jsonify(get_books_by_subject())
@@ -96,6 +97,25 @@ def get_all_books(page=1, page_size=10):
     # Return the books as a JSON response
     return book_list
 
+def get_book_by_id(book_id=-1):
+    conn = sqlite3.connect('db.sqlite')
+    cursor = conn.cursor()
+
+    cursor.execute(f'SELECT * FROM book WHERE id = {book_id};')
+    book = cursor.fetchone()
+    conn.close()
+
+    if book is None:
+        abort(404, description="Book not found")
+
+    book_dict = {
+        'id': book[0],
+        'title': book[1],
+        'author': book[2],
+        'biography': book[4]
+    }
+
+    return book_dict
 
 def get_authors():
     conn = sqlite3.connect('db.sqlite')
