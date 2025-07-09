@@ -1,3 +1,5 @@
+import axios, { AxiosRequestConfig, Method } from "axios";
+
 const baseUrl = process.env.LOCAL_API_BASE_URL as string;
 
 type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE";
@@ -14,25 +16,18 @@ async function request<Response, Body = undefined>(
 ): Promise<Response> {
   const url = `${baseUrl}${path}`;
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(options?.headers || {}),
+  const config: AxiosRequestConfig = {
+    url,
+    method: method as Method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options?.headers || {}),
+    },
+    data: options?.body,
   };
 
-  const config: RequestInit = {
-    method,
-    headers,
-    ...(options?.body ? { body: JSON.stringify(options.body) } : {}),
-  };
-
-  const response = await fetch(url, config);
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`API error: ${response.status} - ${errorText}`);
-  }
-
-  return (await response.json()) as Response;
+  const response = await axios<Response>(config);
+  return response.data;
 }
 
 export const api = {
