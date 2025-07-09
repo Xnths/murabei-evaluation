@@ -14,15 +14,16 @@ def hello_world():
 # GET /api/v1/books - returns a list of all books
 @app.route('/api/v1/books', methods=['GET'])
 def get_books():
-    # Get the page and page_size parameters from the request arguments
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
+    query = request.args.get('q', default="", type=str).strip()
 
-    # Call the get_all_books function with the page and page_size parameters
+    if query != "":
+        return get_books_by_title_or_author(query=query, page=page, page_size=page_size)
+
     data = get_all_books(page=page, page_size=page_size)
-
-    # Return the books as a JSON response
     return jsonify(data)
+
 
 # GET /api/v1/books - return the book with the given id
 @app.route('/api/v1/books/<book_id>', methods=['GET'])
@@ -31,16 +32,6 @@ def get_book(book_id):
 
     # Return the books as a JSON response
     return jsonify(books)
-
-@app.route('/api/v1/books/search', methods=['GET'])
-def search_books():
-    query = request.args.get('q', '', type=str)
-    page = request.args.get('page', default=1, type=int)
-    page_size = request.args.get('page_size', default=10, type=int)
-
-    books = get_books_by_title_or_author(query, page, page_size)
-
-    return books
 
 # GET /api/v1/books/author/<author> - returns a list of all books by the given author
 @app.route('/api/v1/books/author/<author_slug>', methods=['GET'])
@@ -137,14 +128,12 @@ def get_books_by_title_or_author(query, page=1, page_size=10):
     like_query = f"%{query}%"
     offset = (page - 1) * page_size
 
-    # Obter o total de resultados correspondentes
     cursor.execute('''
         SELECT COUNT(*) FROM book 
         WHERE title LIKE ? OR author LIKE ?;
     ''', (like_query, like_query))
     total_books = cursor.fetchone()[0]
 
-    # Obter os livros paginados
     cursor.execute('''
         SELECT * FROM book 
         WHERE title LIKE ? OR author LIKE ? 
