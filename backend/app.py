@@ -7,7 +7,6 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-
 @app.route("/status", methods=["GET"])
 def hello_world():
     return "online"
@@ -36,8 +35,10 @@ def get_book(book_id):
 @app.route('/api/v1/books/search', methods=['GET'])
 def search_books():
     query = request.args.get('q', '', type=str)
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
 
-    books = get_books_by_title_or_author(query)
+    books = get_books_by_title_or_author(query, page, page_size)
 
     return books
 
@@ -129,13 +130,26 @@ def get_book_by_id(book_id=-1):
 
     return book_dict
 
-def get_books_by_title_or_author(query):
+def get_books_by_title_or_author(query, page=1, page_size=10):
     conn = sqlite3.connect('db.sqlite')
     cursor = conn.cursor()
 
     like_query = f"%{query}%"
+    offset = (page - 1) * page_size
 
-    cursor.execute(f'SELECT  FROM book WHERE title LIKE {like_query} OR author LIKE {like_query};')
+    # Obter o total de resultados correspondentes
+    cursor.execute('''
+        SELECT COUNT(*) FROM book 
+        WHERE title LIKE ? OR author LIKE ?;
+    ''', (like_query, like_query))
+    total_books = cursor.fetchone()[0]
+
+    # Obter os livros paginados
+    cursor.execute('''
+        SELECT * FROM book 
+        WHERE title LIKE ? OR author LIKE ? 
+        LIMIT ? OFFSET ?;
+    ''', (like_query, like_query, page_size, offset))
 
     books = cursor.fetchall()
     conn.close()
@@ -149,6 +163,8 @@ def get_books_by_title_or_author(query):
             'biography': book[4]
         }
         book_list.append(book_dict)
+
+    return jsonify({'books': book_list, 'total': total_books})
 
 def get_authors():
     conn = sqlite3.connect('db.sqlite')
