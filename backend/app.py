@@ -33,6 +33,14 @@ def get_book(book_id):
     # Return the books as a JSON response
     return jsonify(books)
 
+@app.route('/api/v1/books/search', methods=['GET'])
+def search_books():
+    query = request.args.get('q', '', type=str)
+
+    books = get_books_by_title_or_author(query)
+
+    return books
+
 # GET /api/v1/books/author/<author> - returns a list of all books by the given author
 @app.route('/api/v1/books/author/<author_slug>', methods=['GET'])
 def get_books_by_author(author_slug):
@@ -120,6 +128,27 @@ def get_book_by_id(book_id=-1):
     }
 
     return book_dict
+
+def get_books_by_title_or_author(query):
+    conn = sqlite3.connect('db.sqlite')
+    cursor = conn.cursor()
+
+    like_query = f"%{query}%"
+
+    cursor.execute(f'SELECT  FROM book WHERE title LIKE {like_query} OR author LIKE {like_query};')
+
+    books = cursor.fetchall()
+    conn.close()
+
+    book_list = []
+    for book in books:
+        book_dict = {
+            'id': book[0],
+            'title': book[1],
+            'author': book[2],
+            'biography': book[4]
+        }
+        book_list.append(book_dict)
 
 def get_authors():
     conn = sqlite3.connect('db.sqlite')
