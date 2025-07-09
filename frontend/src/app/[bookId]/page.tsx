@@ -15,7 +15,7 @@ export default async function BookPage({ params: { bookId } }: BookPageProps) {
     <div>
       <TypographyH1>{book.title}</TypographyH1>
       <TypographyH2>{book.author}</TypographyH2>
-      <p>{book.biography.replace(/<[^<>]+?>/g, "")}</p>
+      {book.biography && <p>{book.biography.replace(/<[^<>]+?>/g, "")}</p>}
     </div>
   );
 }
