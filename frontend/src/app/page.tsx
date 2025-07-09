@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { bookPage } from "../../lib/routes";
+import { bookPageRoute, createBookPageRoute } from "../lib/routes";
 import { getBooks } from "../../lib/http/get-books";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
@@ -49,7 +49,9 @@ export default function Home() {
   return (
     <div className="w-screen h-full p-8">
       <div className="flex flex-col justify-center w-full gap-8">
-        <Button className="w-fit">Adicionar livro</Button>
+        <Link href={createBookPageRoute}>
+          <Button className="w-fit">Adicionar livro</Button>
+        </Link>
         <form onSubmit={onSubmit}>
           <div>
             <Label htmlFor="search">Buscar:</Label>
@@ -75,7 +77,7 @@ export default function Home() {
                 <CardDescription>{book.author}</CardDescription>
               </CardHeader>
               <CardFooter>
-                <Link href={bookPage(book.id)}>
+                <Link href={bookPageRoute(book.id)}>
                   <Button variant="outline">Detalhes</Button>
                 </Link>
               </CardFooter>
