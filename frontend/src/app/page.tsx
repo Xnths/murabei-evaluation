@@ -22,14 +22,17 @@ export default async function Home() {
     <div className="w-screen h-full p-8">
       <div className="flex flex-col justify-center w-full gap-8">
         <Button className="w-fit">Adicionar livro</Button>
-        <div>
-          <Label htmlFor="search">Buscar:</Label>
-          <Input
-            id="search"
-            type="text"
-            placeholder="Título do livro ou autor"
-          />
-        </div>
+        <form>
+          <div>
+            <Label htmlFor="search">Buscar:</Label>
+            <Input
+              id="search"
+              type="text"
+              placeholder="Título do livro ou autor"
+            />
+          </div>
+          <Button>Buscar</Button>
+        </form>
         <div className="flex flex-row flex-wrap items-center gap-4">
           {books &&
             books.map((book) => (
