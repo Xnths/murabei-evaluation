@@ -20,10 +20,10 @@ def get_books():
     page_size = request.args.get('page_size', default=10, type=int)
 
     # Call the get_all_books function with the page and page_size parameters
-    books = get_all_books(page=page, page_size=page_size)
+    data = get_all_books(page=page, page_size=page_size)
 
     # Return the books as a JSON response
-    return jsonify(books)
+    return jsonify(data)
 
 # GET /api/v1/books - return the book with the given id
 @app.route('/api/v1/books/<book_id>', methods=['GET'])
@@ -76,6 +76,10 @@ def get_all_books(page=1, page_size=10):
     # Calculate the offset based on the page number and page size
     offset = (page - 1) * page_size
 
+    # Total de livros
+    cursor.execute('SELECT COUNT(*) FROM book;')
+    total_books = cursor.fetchone()[0]
+
     # Execute a SELECT query with pagination
     cursor.execute(f'SELECT * FROM book LIMIT {page_size} OFFSET {offset};')
     books = cursor.fetchall()
@@ -95,7 +99,7 @@ def get_all_books(page=1, page_size=10):
     conn.close()
 
     # Return the books as a JSON response
-    return book_list
+    return {'books': book_list, 'total': total_books}
 
 def get_book_by_id(book_id=-1):
     conn = sqlite3.connect('db.sqlite')
