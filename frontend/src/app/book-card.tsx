@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { bookPageRoute } from "../lib/routes";
+import { bookPageRoute, editBookPageRoute } from "../lib/routes";
+import { PencilIcon, Trash } from "lucide-react";
 
 interface BookCardProps {
   id: string;
@@ -27,6 +28,16 @@ export function BookCard({ id, title, author }: BookCardProps) {
         <Link href={bookPageRoute(id)}>
           <Button variant="outline">Detalhes</Button>
         </Link>
+        <div className="flex flex-row gap-2">
+          <Link href={editBookPageRoute(id)}>
+            <Button type="button" variant="outline" size="icon">
+              <PencilIcon className="size-4 opacity-50" />
+            </Button>
+          </Link>
+          <Button type="button" variant="outline" size="icon">
+            <Trash className="size-4 opacity-50" />
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
