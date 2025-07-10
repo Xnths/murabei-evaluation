@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
-type Props = {
+interface AdvancedSearchProps {
   searchTitle: string;
   setSearchTitle: (value: string) => void;
   searchAuthor: string;
@@ -18,9 +18,9 @@ type Props = {
   pageSize: number;
   setPageSize: (value: number) => void;
   onApply: () => void;
-};
+}
 
-export function AdvancedFilter({
+export function AdvancedSearch({
   searchTitle,
   setSearchTitle,
   searchAuthor,
@@ -28,7 +28,7 @@ export function AdvancedFilter({
   pageSize,
   setPageSize,
   onApply,
-}: Props) {
+}: AdvancedSearchProps) {
   return (
     <Accordion type="single" collapsible className="w-full">
       <AccordionItem value="filter">

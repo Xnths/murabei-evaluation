@@ -9,16 +9,15 @@ import {
 } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { bookPageRoute, createBookPageRoute, homePage } from "../lib/routes";
 import { getBooks } from "../../lib/http/get-books";
-import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import { PaginatedNavigation } from "./paginated-navigator";
-import { AdvancedFilter } from "./advanced-filter";
+import { AdvancedSearch } from "./advanced-search";
+import { Search } from "./search";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -41,16 +40,6 @@ export default function Home() {
   });
 
   const totalPages = Math.ceil((data?.total || 1) / pageSize);
-
-  function handleSearchSubmit(e: FormEvent) {
-    e.preventDefault();
-
-    const params = new URLSearchParams();
-    if (searchTerm) params.set("q", searchTerm);
-    params.set("page", "1");
-
-    router.push(`/?${params.toString()}`);
-  }
 
   function applyFilters() {
     setSearchTerm("");
@@ -90,21 +79,8 @@ export default function Home() {
         <Link href={createBookPageRoute}>
           <Button className="w-fit">Adicionar livro</Button>
         </Link>
-        <form onSubmit={handleSearchSubmit}>
-          <div>
-            <Label htmlFor="search">Buscar:</Label>
-            <Input
-              id="search"
-              name="q"
-              type="text"
-              placeholder="Título do livro ou autor"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Button type="submit">Buscar</Button>
-        </form>
-        <AdvancedFilter
+        <Search />
+        <AdvancedSearch
           searchTitle={searchTitle}
           setSearchTitle={setSearchTitle}
           searchAuthor={searchAuthor}
