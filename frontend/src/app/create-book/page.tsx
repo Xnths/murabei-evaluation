@@ -3,16 +3,28 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { slugfy } from "@/lib/utils";
 import { useForm } from "react-hook-form";
-import { PostBooksRequest } from "../../../lib/http/post-books";
+import { useMutation } from "@tanstack/react-query";
+import { postBooks, PostBooksRequest } from "../../../lib/http/post-books";
+import { toast } from "sonner";
 
 export default function BookPageRoute() {
-  const { register, handleSubmit } = useForm<PostBooksRequest>();
+  const { register, handleSubmit, reset } = useForm<PostBooksRequest>();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: postBooks,
+    onSuccess: () => {
+      toast.success("Livro criado com sucesso");
+      reset();
+    },
+    onError: () => {
+      toast.error("Não foi possível criar o livro. Tente novamente!");
+    },
+  });
 
   function onSubmit(data: PostBooksRequest) {
-    data.author_slug = slugfy(data.author);
-    console.log("Dados enviados:", data);
+    mutate(data);
+    console.log(data);
   }
 
   return (
@@ -30,12 +42,8 @@ export default function BookPageRoute() {
           <Input id="author" {...register("author")} />
         </div>
         <div>
-          <Label htmlFor="publisher">Editora</Label>
-          <Input id="publisher" {...register("publisher")} />
-        </div>
-        <div>
-          <Label htmlFor="synopsis">Sinopse</Label>
-          <Input id="synopsis" {...register("synopsis")} />
+          <Label htmlFor="author_slug">Slug do autor</Label>
+          <Input id="author_slug" {...register("author_slug")} />
         </div>
         <div>
           <Label htmlFor="author_bio">Biografia do autor</Label>
@@ -45,7 +53,18 @@ export default function BookPageRoute() {
           <Label htmlFor="authors">Autores</Label>
           <Input id="authors" {...register("authors")} />
         </div>
-        <Button type="submit">Criar</Button>
+        <div>
+          <Label htmlFor="publisher">Editora</Label>
+          <Input id="publisher" {...register("publisher")} />
+        </div>
+        <div>
+          <Label htmlFor="synopsis">Sinopse</Label>
+          <Input id="synopsis" {...register("synopsis")} />
+        </div>
+
+        <Button type="submit" disabled={isPending}>
+          Criar
+        </Button>
       </form>
     </div>
   );
