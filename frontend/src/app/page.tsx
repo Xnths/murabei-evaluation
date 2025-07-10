@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { createBookPageRoute, homePage } from "../lib/routes";
@@ -18,15 +17,10 @@ export default function Home() {
   const router = useRouter();
 
   const q = searchParams.get("q") || "";
-  const pageSize = Number(searchParams.get("pageSize")) || 9;
-  const currentPage = Number(searchParams.get("page") || 1);
   const title = searchParams.get("title") || "";
   const author = searchParams.get("author") || "";
-
-  const [searchTerm, setSearchTerm] = useState(q);
-  const [searchTitle, setSearchTitle] = useState(title);
-  const [searchAuthor, setSearchAuthor] = useState(author);
-  const [customPageSize, setCustomPageSize] = useState(pageSize);
+  const pageSize = Number(searchParams.get("pageSize")) || 9;
+  const currentPage = Number(searchParams.get("page")) || 1;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["books", currentPage, pageSize, q, title, author],
@@ -35,16 +29,23 @@ export default function Home() {
 
   const totalPages = Math.ceil((data?.total || 1) / pageSize);
 
-  function applyFilters() {
-    setSearchTerm("");
+  function applyFilters({
+    q,
+    title,
+    author,
+    pageSize,
+  }: {
+    q?: string;
+    title?: string;
+    author?: string;
+    pageSize?: number;
+  }) {
     const params = new URLSearchParams();
-    params.set("q", searchTerm);
-    if (searchTerm) params.set("q", searchTerm);
-    if (searchTitle) params.set("title", searchTitle);
-    if (searchAuthor) params.set("author", searchAuthor);
-    if (customPageSize) params.set("pageSize", String(customPageSize));
+    if (q) params.set("q", q);
+    if (title) params.set("title", title);
+    if (author) params.set("author", author);
+    if (pageSize) params.set("pageSize", String(pageSize));
     params.set("page", "1");
-
     router.push(`/?${params.toString()}`);
   }
 
@@ -58,14 +59,11 @@ export default function Home() {
     router.push(`/?${params.toString()}`);
   }
 
+  const showRemoveFiltersButton =
+    q !== "" || title !== "" || author !== "" || searchParams.has("pageSize");
+
   if (isLoading) return <div>Carregando...</div>;
   if (error) return <div>Erro ao carregar livros</div>;
-
-  const showRemoveFiltersButton =
-    searchParams.has("q") ||
-    searchParams.has("title") ||
-    searchParams.has("author") ||
-    searchParams.has("pageSize");
 
   return (
     <div className="w-screen h-full p-8">
@@ -73,16 +71,25 @@ export default function Home() {
         <Link href={createBookPageRoute}>
           <Button className="w-fit">Adicionar livro</Button>
         </Link>
+
         <Search />
+
         <AdvancedSearch
-          searchTitle={searchTitle}
-          setSearchTitle={setSearchTitle}
-          searchAuthor={searchAuthor}
-          setSearchAuthor={setSearchAuthor}
-          pageSize={customPageSize}
-          setPageSize={setCustomPageSize}
-          onApply={applyFilters}
+          searchTitle={title}
+          setSearchTitle={(value) =>
+            applyFilters({ title: value, q, author, pageSize })
+          }
+          searchAuthor={author}
+          setSearchAuthor={(value) =>
+            applyFilters({ author: value, q, title, pageSize })
+          }
+          pageSize={pageSize}
+          setPageSize={(value) =>
+            applyFilters({ pageSize: value, q, title, author })
+          }
+          onApply={() => applyFilters({ q, title, author, pageSize })}
         />
+
         {showRemoveFiltersButton && (
           <Button onClick={removeFilters}>Limpar busca</Button>
         )}
