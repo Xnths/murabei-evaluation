@@ -17,23 +17,23 @@ import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { AccordionContent } from "@radix-ui/react-accordion";
 import { PaginatedNavigation } from "./paginated-navigator";
+import { AdvancedFilter } from "./advanced-filter";
 
 export default function Home() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const q = searchParams.get("q") || "";
-  const currentPage = Number(searchParams.get("page") || "1");
-  const pageSize = 9;
+  const pageSize = Number(searchParams.get("pageSize")) || 9;
+  const currentPage = Number(searchParams.get("page") || 1);
+  const title = searchParams.get("title") || "";
+  const author = searchParams.get("author") || "";
 
   const [searchTerm, setSearchTerm] = useState(q);
+  const [searchTitle, setSearchTitle] = useState(title);
+  const [searchAuthor, setSearchAuthor] = useState(author);
+  const [customPageSize, setCustomPageSize] = useState(pageSize);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["books", currentPage, pageSize, q],
@@ -42,11 +42,24 @@ export default function Home() {
 
   const totalPages = Math.ceil((data?.total || 1) / pageSize);
 
-  function onSubmit(e: FormEvent) {
+  function handleSearchSubmit(e: FormEvent) {
     e.preventDefault();
 
     const params = new URLSearchParams();
     if (searchTerm) params.set("q", searchTerm);
+    params.set("page", "1");
+
+    router.push(`/?${params.toString()}`);
+  }
+
+  function applyFilters() {
+    setSearchTerm("");
+    const params = new URLSearchParams();
+    params.set("q", searchTerm);
+    if (searchTerm) params.set("q", searchTerm);
+    if (searchTitle) params.set("title", searchTitle);
+    if (searchAuthor) params.set("author", searchAuthor);
+    if (customPageSize) params.set("pageSize", String(customPageSize));
     params.set("page", "1");
 
     router.push(`/?${params.toString()}`);
@@ -67,7 +80,7 @@ export default function Home() {
         <Link href={createBookPageRoute}>
           <Button className="w-fit">Adicionar livro</Button>
         </Link>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={handleSearchSubmit}>
           <div>
             <Label htmlFor="search">Buscar:</Label>
             <Input
@@ -81,14 +94,16 @@ export default function Home() {
           </div>
           <Button type="submit">Buscar</Button>
         </form>
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="filter">
-            <AccordionTrigger>filtro avançado</AccordionTrigger>
-            <AccordionContent>
-              <form></form>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        <AdvancedFilter
+          searchTitle={searchTitle}
+          setSearchTitle={setSearchTitle}
+          searchAuthor={searchAuthor}
+          setSearchAuthor={setSearchAuthor}
+          pageSize={customPageSize}
+          setPageSize={setCustomPageSize}
+          onApply={applyFilters}
+        />
+
         <div className="flex flex-row flex-wrap items-center gap-4">
           {data?.books?.map((book) => (
             <Card
