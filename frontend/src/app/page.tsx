@@ -11,7 +11,13 @@ import { PaginatedNavigation } from "./paginated-navigator";
 import { AdvancedSearch } from "./advanced-search";
 import { Search } from "./search";
 import { BookCard } from "./book-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -73,64 +79,76 @@ export default function Home() {
   if (error) return <div>Erro ao carregar livros</div>;
 
   return (
-    <div className="w-screen h-full p-8">
-      <div className="flex flex-col justify-center w-full gap-8">
-        <Link href={createBookPageRoute} className="w-fit">
-          <Button className="w-fit">
-            <Plus />
-            <span>Adicionar livro</span>
-          </Button>
-        </Link>
+    <div className="w-screen h-full p-8 flex justify-center items-center">
+      <div className="w-full lg:w-[1000px]">
+        <div className="flex flex-col justify-center w-full gap-8">
+          <Link href={createBookPageRoute} className="w-fit">
+            <Button className="w-fit">
+              <Plus />
+              <span>Adicionar livro</span>
+            </Button>
+          </Link>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Buscar</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Search />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Buscar</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Search />
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent>
-            <AdvancedSearch
-              searchTitle={searchTitle}
-              setSearchTitle={setSearchTitle}
-              searchAuthor={searchAuthor}
-              setSearchAuthor={setSearchAuthor}
-              pageSize={searchPageSize}
-              setPageSize={setSearchPageSize}
-              onApply={() =>
-                applyFilters({
-                  title: searchTitle,
-                  author: searchAuthor,
-                  pageSize: searchPageSize,
-                })
-              }
-            />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardContent>
+              <AdvancedSearch
+                searchTitle={searchTitle}
+                setSearchTitle={setSearchTitle}
+                searchAuthor={searchAuthor}
+                setSearchAuthor={setSearchAuthor}
+                pageSize={searchPageSize}
+                setPageSize={setSearchPageSize}
+                onApply={() =>
+                  applyFilters({
+                    title: searchTitle,
+                    author: searchAuthor,
+                    pageSize: searchPageSize,
+                  })
+                }
+              />
+            </CardContent>
+          </Card>
 
-        {showRemoveFiltersButton && (
-          <Button onClick={removeFilters}>Limpar busca</Button>
-        )}
+          {showRemoveFiltersButton && (
+            <Button onClick={removeFilters}>Limpar busca</Button>
+          )}
 
-        <div className="flex flex-row flex-wrap items-center gap-4">
-          {data?.books?.map((book) => (
-            <BookCard
-              key={book.id}
-              id={book.id}
-              title={book.title}
-              author={book.author}
-            />
-          ))}
+          <Card>
+            <CardHeader>
+              <CardTitle>Livros</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex w-full items-center justify-center">
+                <div className="flex flex-col flex-wrap items-center gap-4 lg:grid grid-cols-3 grid-rows-auto w-fit">
+                  {data?.books?.map((book) => (
+                    <BookCard
+                      key={book.id}
+                      id={book.id}
+                      title={book.title}
+                      author={book.author}
+                    />
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <PaginatedNavigation
+                currentPage={currentPage}
+                totalPages={totalPages}
+                goToPage={goToPage}
+              />
+            </CardFooter>
+          </Card>
         </div>
-
-        <PaginatedNavigation
-          currentPage={currentPage}
-          totalPages={totalPages}
-          goToPage={goToPage}
-        />
       </div>
     </div>
   );
