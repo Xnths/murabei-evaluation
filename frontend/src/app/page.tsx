@@ -36,8 +36,8 @@ export default function Home() {
   const [customPageSize, setCustomPageSize] = useState(pageSize);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["books", currentPage, pageSize, q],
-    queryFn: () => getBooks({ page: currentPage, pageSize, q }),
+    queryKey: ["books", currentPage, pageSize, q, title, author],
+    queryFn: () => getBooks({ page: currentPage, pageSize, q, title, author }),
   });
 
   const totalPages = Math.ceil((data?.total || 1) / pageSize);
