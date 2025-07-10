@@ -62,10 +62,12 @@ def get_books():
 # GET /api/v1/books/<book_id> - return the book with the given id
 @app.route('/api/v1/books/<book_id>', methods=['GET'])
 def get_book(book_id):
-    books = get_book_by_id(book_id)
+    book = get_book_by_id(book_id)
 
     # Return the books as a JSON response
-    return jsonify(books)
+    return jsonify({
+        "book": book
+    })
 
 # GET /api/v1/books/author/<author> - returns a list of all books by the given author
 @app.route('/api/v1/books/author/<author_slug>', methods=['GET'])
