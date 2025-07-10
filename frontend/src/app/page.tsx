@@ -11,6 +11,9 @@ import { PaginatedNavigation } from "./paginated-navigator";
 import { AdvancedSearch } from "./advanced-search";
 import { Search } from "./search";
 import { BookCard } from "./book-card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus } from "lucide-react";
+import { useState } from "react";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -21,6 +24,10 @@ export default function Home() {
   const author = searchParams.get("author") || "";
   const pageSize = Number(searchParams.get("pageSize")) || 9;
   const currentPage = Number(searchParams.get("page")) || 1;
+
+  const [searchTitle, setSearchTitle] = useState<string>(title);
+  const [searchAuthor, setSearchAuthor] = useState<string>(author);
+  const [searchPageSize, setSearchPageSize] = useState<number>(pageSize);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["books", currentPage, pageSize, q, title, author],
@@ -68,27 +75,41 @@ export default function Home() {
   return (
     <div className="w-screen h-full p-8">
       <div className="flex flex-col justify-center w-full gap-8">
-        <Link href={createBookPageRoute}>
-          <Button className="w-fit">Adicionar livro</Button>
+        <Link href={createBookPageRoute} className="w-fit">
+          <Button className="w-fit">
+            <Plus />
+            <span>Adicionar livro</span>
+          </Button>
         </Link>
 
-        <Search />
+        <Card>
+          <CardHeader>
+            <CardTitle>Buscar</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Search />
+          </CardContent>
+        </Card>
 
-        <AdvancedSearch
-          searchTitle={title}
-          setSearchTitle={(value) =>
-            applyFilters({ title: value, q, author, pageSize })
-          }
-          searchAuthor={author}
-          setSearchAuthor={(value) =>
-            applyFilters({ author: value, q, title, pageSize })
-          }
-          pageSize={pageSize}
-          setPageSize={(value) =>
-            applyFilters({ pageSize: value, q, title, author })
-          }
-          onApply={() => applyFilters({ q, title, author, pageSize })}
-        />
+        <Card>
+          <CardContent>
+            <AdvancedSearch
+              searchTitle={searchTitle}
+              setSearchTitle={setSearchTitle}
+              searchAuthor={searchAuthor}
+              setSearchAuthor={setSearchAuthor}
+              pageSize={searchPageSize}
+              setPageSize={setSearchPageSize}
+              onApply={() =>
+                applyFilters({
+                  title: searchTitle,
+                  author: searchAuthor,
+                  pageSize: searchPageSize,
+                })
+              }
+            />
+          </CardContent>
+        </Card>
 
         {showRemoveFiltersButton && (
           <Button onClick={removeFilters}>Limpar busca</Button>

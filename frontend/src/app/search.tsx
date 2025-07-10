@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X } from "lucide-react";
+import { SearchIcon, X } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 
@@ -48,7 +48,7 @@ export const Search = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div>
-        <Label htmlFor="search">Buscar:</Label>
+        <Label htmlFor="search">Nome ou autor:</Label>
         <div className="flex flex-row gap-2">
           <Input
             id="search"
@@ -64,7 +64,9 @@ export const Search = () => {
           >
             <X className="size-4" />
           </Button>
-          <Button type="submit">Buscar</Button>
+          <Button size="icon" type="submit">
+            <SearchIcon className="size-4" />
+          </Button>
         </div>
       </div>
     </form>

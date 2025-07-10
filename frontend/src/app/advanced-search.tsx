@@ -32,9 +32,9 @@ export function AdvancedSearch({
   return (
     <Accordion type="single" collapsible className="w-full">
       <AccordionItem value="filter">
-        <AccordionTrigger>filtro avançado</AccordionTrigger>
+        <AccordionTrigger>Busca avançada</AccordionTrigger>
         <AccordionContent>
-          <form className="flex flex-col gap-4">
+          <form className="sm:flex flex-col gap-4 grid grid-cols-3 grid-rows-auto">
             <div>
               <Label htmlFor="title">Título:</Label>
               <Input
