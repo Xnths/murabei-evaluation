@@ -61,7 +61,6 @@ export default function BookPageRoute() {
           <Label htmlFor="synopsis">Sinopse</Label>
           <Input id="synopsis" {...register("synopsis")} />
         </div>
-
         <Button type="submit" disabled={isPending}>
           Criar
         </Button>
