@@ -34,7 +34,7 @@ export function AdvancedSearch({
       <AccordionItem value="filter">
         <AccordionTrigger>Busca avançada</AccordionTrigger>
         <AccordionContent>
-          <form className="sm:flex flex-col gap-4 grid grid-cols-3 grid-rows-auto">
+          <form className="flex flex-col gap-4">
             <div>
               <Label htmlFor="title">Título:</Label>
               <Input
