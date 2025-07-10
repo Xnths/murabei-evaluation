@@ -69,6 +69,25 @@ def get_book(book_id):
         "book": book
     })
 
+# PUT /api/v1/books/<book_id> - edit the book data with the given id
+@app.route('/api/v1/books/<book_id>', methods=['PUT'])
+def edit_book_route(book_id):
+    try:
+        book_id = int(book_id)
+    except ValueError:
+        abort(400, description="Invalid book ID")
+
+    book_data = request.get_json()
+    if not book_data:
+        abort(400, description="Missing JSON body")
+
+    updated_book = edit_book(book_id, book_data)
+
+    return jsonify({
+        "book": updated_book
+    })
+
+
 # GET /api/v1/books/author/<author> - returns a list of all books by the given author
 @app.route('/api/v1/books/author/<author_slug>', methods=['GET'])
 def get_books_by_author(author_slug):
@@ -371,6 +390,36 @@ def create_new_book(book_data):
 
     # Return a message to the user
     return {'message': 'Book created successfully.'}, 201
+
+def edit_book(book_id, book_data):
+    conn = sqlite3.connect('db.sqlite')
+    cursor = conn.cursor()
+
+    # Verifica se o livro existe
+    cursor.execute("SELECT * FROM book WHERE id = ?;", (book_id,))
+    existing = cursor.fetchone()
+    if existing is None:
+        abort(404, description="Book not found")
+
+    title = book_data.get("title", existing[1])
+    author = book_data.get("author", existing[2])
+    biography = book_data.get("biography", existing[4])
+
+    cursor.execute("""
+        UPDATE book
+        SET title = ?, author = ?, author_bio = ?
+        WHERE id = ?;
+    """, (title, author, biography, book_id))
+
+    conn.commit()
+    conn.close()
+
+    return {
+        "id": book_id,
+        "title": title,
+        "author": author,
+        "biography": biography
+    }
 
 
 # # GET /api/v1/books
