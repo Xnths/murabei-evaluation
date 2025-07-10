@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { bookPageRoute, createBookPageRoute } from "../lib/routes";
+import { bookPageRoute, createBookPageRoute, homePage } from "../lib/routes";
 import { getBooks } from "../../lib/http/get-books";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
@@ -65,6 +65,10 @@ export default function Home() {
     router.push(`/?${params.toString()}`);
   }
 
+  function removeFilters() {
+    router.push(homePage);
+  }
+
   function goToPage(page: number) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", String(page));
@@ -73,6 +77,12 @@ export default function Home() {
 
   if (isLoading) return <div>Carregando...</div>;
   if (error) return <div>Erro ao carregar livros</div>;
+
+  const showRemoveFiltersButton =
+    searchParams.has("q") ||
+    searchParams.has("title") ||
+    searchParams.has("author") ||
+    searchParams.has("pageSize");
 
   return (
     <div className="w-screen h-full p-8">
@@ -103,6 +113,9 @@ export default function Home() {
           setPageSize={setCustomPageSize}
           onApply={applyFilters}
         />
+        {showRemoveFiltersButton && (
+          <Button onClick={() => removeFilters()}>Limpar busca</Button>
+        )}
 
         <div className="flex flex-row flex-wrap items-center gap-4">
           {data?.books?.map((book) => (
@@ -114,7 +127,7 @@ export default function Home() {
                 <CardTitle>{book.title}</CardTitle>
                 <CardDescription>{book.author}</CardDescription>
               </CardHeader>
-              <CardFooter>
+              <CardFooter className="flex flex-row justify-between">
                 <Link href={bookPageRoute(book.id)}>
                   <Button variant="outline">Detalhes</Button>
                 </Link>
@@ -122,7 +135,6 @@ export default function Home() {
             </Card>
           ))}
         </div>
-
         <PaginatedNavigation
           currentPage={currentPage}
           totalPages={totalPages}

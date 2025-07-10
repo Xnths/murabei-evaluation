@@ -24,7 +24,6 @@ export default function BookPageRoute() {
 
   function onSubmit(data: PostBooksRequest) {
     mutate(data);
-    console.log(data);
   }
 
   return (
