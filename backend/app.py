@@ -17,15 +17,49 @@ def get_books():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     query = request.args.get('q', default="", type=str).strip()
+    title = request.args.get('title', default="", type=str).strip()
+    author = request.args.get('author', default="", type=str).strip()
 
-    if query != "":
+    if query:
         return get_books_by_title_or_author(query=query, page=page, page_size=page_size)
 
-    data = get_all_books(page=page, page_size=page_size)
-    return jsonify(data)
+    books = []
 
+    if title and author:
+        books_by_title = retrive_books_by_title(title)
+        # Filtro explícito por título e autor exatos (usando lower() para igualdade fraca)
+        books = [
+            book for book in books_by_title
+            if author.lower() in book['author'].lower()
+        ]
+    elif title:
+        books = retrive_books_by_title(title)
+    elif author:
+        books = retrive_books_by_author(author)
 
-# GET /api/v1/books - return the book with the given id
+    if title or author:
+        # Remover duplicatas
+        seen_ids = set()
+        unique_books = []
+        for b in books:
+            if b["id"] not in seen_ids:
+                unique_books.append(b)
+                seen_ids.add(b["id"])
+
+        # Paginação manual
+        total_books = len(unique_books)
+        start = (page - 1) * page_size
+        end = start + page_size
+        paginated_books = unique_books[start:end]
+
+        return jsonify({
+            "books": paginated_books,
+            "total": total_books
+        })
+
+    return jsonify(get_all_books(page=page, page_size=page_size))
+
+# GET /api/v1/books/<book_id> - return the book with the given id
 @app.route('/api/v1/books/<book_id>', methods=['GET'])
 def get_book(book_id):
     books = get_book_by_id(book_id)
@@ -120,6 +154,54 @@ def get_book_by_id(book_id=-1):
     }
 
     return book_dict
+
+def retrive_books_by_title(title):
+    if not title:
+        return []
+
+    conn = sqlite3.connect('db.sqlite')
+    cursor = conn.cursor()
+
+    like_query = f"%{title}%"
+    cursor.execute("SELECT * FROM book WHERE title LIKE ?", (like_query,))
+    books = cursor.fetchall()
+
+    conn.close()
+
+    return [
+        {
+            'id': book[0],
+            'title': book[1],
+            'author': book[2],
+            'biography': book[4]
+        }
+        for book in books
+    ]
+
+
+def retrive_books_by_author(author):
+    if not author:
+        return []
+
+    conn = sqlite3.connect('db.sqlite')
+    cursor = conn.cursor()
+
+    like_query = f"%{author}%"
+    cursor.execute("SELECT * FROM book WHERE author LIKE ?", (like_query,))
+    books = cursor.fetchall()
+
+    conn.close()
+
+    return [
+        {
+            'id': book[0],
+            'title': book[1],
+            'author': book[2],
+            'biography': book[4]
+        }
+        for book in books
+    ]
+
 
 def get_books_by_title_or_author(query, page=1, page_size=10):
     conn = sqlite3.connect('db.sqlite')
