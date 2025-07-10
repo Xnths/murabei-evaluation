@@ -2,6 +2,8 @@
 
 ## Vamos lá!
 
+### Configuração
+
 Incie o ambiente python
 
 ```bash
@@ -15,10 +17,38 @@ Então, instale as depedências
 pip install -r requirements.txt
 ```
 
-## Após ativar o docker
+### Docker
+
+Execute:
+
+```bash
+./build.bash
+```
+
+Depois vá ao diretório \_docker-compose e execute:
+
+```bash
+./docker-up.bash
+```
+
+### Execução
 
 Execute uma requição para a url com curl (ou Postman)
 
 ```bash
-curl http://localhost:5000/
+curl http://localhost:5000/status
+```
+
+Se a resposta for "online", tudo está funcionando corretamente.
+
+## Testes
+
+Estamos usando BDD (Behavior Driven Design/Development).
+
+Dessa forma temos features em Gherkin e testes para as funcionalidades e cenários em pytest.
+
+Para executá-los, faça:
+
+```bash
+pytest
 ```
