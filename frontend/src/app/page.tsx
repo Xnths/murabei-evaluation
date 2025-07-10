@@ -1,23 +1,17 @@
 "use client";
 
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { bookPageRoute, createBookPageRoute, homePage } from "../lib/routes";
-import { getBooks } from "../../lib/http/get-books";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { createBookPageRoute, homePage } from "../lib/routes";
+import { getBooks } from "../../lib/http/get-books";
 import { PaginatedNavigation } from "./paginated-navigator";
 import { AdvancedSearch } from "./advanced-search";
 import { Search } from "./search";
+import { BookCard } from "./book-card";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -90,27 +84,20 @@ export default function Home() {
           onApply={applyFilters}
         />
         {showRemoveFiltersButton && (
-          <Button onClick={() => removeFilters()}>Limpar busca</Button>
+          <Button onClick={removeFilters}>Limpar busca</Button>
         )}
 
         <div className="flex flex-row flex-wrap items-center gap-4">
           {data?.books?.map((book) => (
-            <Card
+            <BookCard
               key={book.id}
-              className="w-[300px] h-[200px] flex flex-col justify-between"
-            >
-              <CardHeader>
-                <CardTitle>{book.title}</CardTitle>
-                <CardDescription>{book.author}</CardDescription>
-              </CardHeader>
-              <CardFooter className="flex flex-row justify-between">
-                <Link href={bookPageRoute(book.id)}>
-                  <Button variant="outline">Detalhes</Button>
-                </Link>
-              </CardFooter>
-            </Card>
+              id={book.id}
+              title={book.title}
+              author={book.author}
+            />
           ))}
         </div>
+
         <PaginatedNavigation
           currentPage={currentPage}
           totalPages={totalPages}
