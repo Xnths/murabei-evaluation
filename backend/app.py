@@ -1,4 +1,4 @@
-import json
+from datetime import datetime, timezone
 import sqlite3
 
 from flask import Flask, jsonify, request, abort
@@ -87,6 +87,13 @@ def edit_book_route(book_id):
         "book": updated_book
     })
 
+# DELETE /api/v1/books/<book_id> - soft delete the book by the given id
+@app.route('/api/v1/books/<book_id>', methods=['DELETE'])
+def delete_book_route(book_id):
+    delete_book(book_id)
+
+    return jsonify({"message": f"Book {book_id} logically deleted."}), 200
+
 
 # GET /api/v1/books/author/<author> - returns a list of all books by the given author
 @app.route('/api/v1/books/author/<author_slug>', methods=['GET'])
@@ -132,11 +139,11 @@ def get_all_books(page=1, page_size=10):
     offset = (page - 1) * page_size
 
     # Total de livros
-    cursor.execute('SELECT COUNT(*) FROM book;')
+    cursor.execute('SELECT COUNT(*) FROM book WHERE active = 1;')
     total_books = cursor.fetchone()[0]
 
     # Execute a SELECT query with pagination
-    cursor.execute(f'SELECT * FROM book LIMIT {page_size} OFFSET {offset};')
+    cursor.execute(f'SELECT * FROM book WHERE active = 1 LIMIT {page_size} OFFSET {offset};')
     books = cursor.fetchall()
 
     # Convert the books data to a list of dictionaries
@@ -160,7 +167,7 @@ def get_book_by_id(book_id=-1):
     conn = sqlite3.connect('db.sqlite')
     cursor = conn.cursor()
 
-    cursor.execute(f'SELECT * FROM book WHERE id = {book_id};')
+    cursor.execute("SELECT * FROM book WHERE id = ? AND active = 1;", (book_id,))
     book = cursor.fetchone()
     conn.close()
 
@@ -184,7 +191,7 @@ def retrive_books_by_title(title):
     cursor = conn.cursor()
 
     like_query = f"%{title}%"
-    cursor.execute("SELECT * FROM book WHERE title LIKE ?", (like_query,))
+    cursor.execute("SELECT * FROM book WHERE title LIKE ? AND active = 1", (like_query,))
     books = cursor.fetchall()
 
     conn.close()
@@ -208,7 +215,7 @@ def retrive_books_by_author(author):
     cursor = conn.cursor()
 
     like_query = f"%{author}%"
-    cursor.execute("SELECT * FROM book WHERE author LIKE ?", (like_query,))
+    cursor.execute("SELECT * FROM book WHERE author LIKE ? AND active = 1", (like_query,))
     books = cursor.fetchall()
 
     conn.close()
@@ -233,14 +240,14 @@ def get_books_by_title_or_author(query, page=1, page_size=10):
 
     cursor.execute('''
         SELECT COUNT(*) FROM book 
-        WHERE title LIKE ? OR author LIKE ?;
+        WHERE (title LIKE ? OR author LIKE ?) AND active = 1
     ''', (like_query, like_query))
     total_books = cursor.fetchone()[0]
 
     cursor.execute('''
         SELECT * FROM book 
-        WHERE title LIKE ? OR author LIKE ? 
-        LIMIT ? OFFSET ?;
+        WHERE (title LIKE ? OR author LIKE ?) AND active = 1 
+        LIMIT ? OFFSET ?
     ''', (like_query, like_query, page_size, offset))
 
     books = cursor.fetchall()
@@ -290,7 +297,7 @@ def get_books_by_author_name(author_slug):
 
     # Execute a SELECT query to fetch all books by the given author
     cursor.execute(
-        'SELECT * FROM book WHERE author_slug = ?;', (author_slug,))
+        'SELECT * FROM book WHERE author_slug = ? AND active = 1;', (author_slug,))
     books = cursor.fetchall()
 
     # Convert the books data to a list of dictionaries
@@ -336,7 +343,7 @@ def get_books_by_subject_slug(subject):
     query = '''
     SELECT title, author, author_slug, author_bio, authors, publisher, synopsis
     FROM book
-    WHERE subjects = ?
+    WHERE subjects = ? AND active = 1
     '''
 
     # Execute a SELECT query to fetch all books by the given subject
@@ -420,6 +427,18 @@ def edit_book(book_id, book_data):
         "author": author,
         "biography": biography
     }
+
+def delete_book(book_id):
+    deleted_at = datetime.now(timezone.utc).isoformat()
+
+    conn = sqlite3.connect('db.sqlite')
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE book SET active = 0, deleted_at = ? WHERE id = ?;",
+        (deleted_at, book_id)
+    )
+    conn.commit()
+    conn.close()
 
 
 # # GET /api/v1/books
