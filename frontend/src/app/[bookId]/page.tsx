@@ -29,7 +29,15 @@ export default async function bookPageRoute({
         <CardHeader className="flex flex-col gap-4">
           <TypographyH1>{book.title}</TypographyH1>
           <TypographyH2>{book.author}</TypographyH2>
-          <CopyItem value={citation} />
+          <Card>
+            <CardHeader className="font-bold">Citação</CardHeader>
+            <CardContent className="flex flex-row gap-4 items-center">
+              <span className="w-[200px] overflow-clip h-[40px] truncate lg:w-full lg:max-w-[900px] px-4 py-2 border-black/10 border-2 rounded-xl">
+                {citation}
+              </span>
+              <CopyItem value={citation} />
+            </CardContent>
+          </Card>
         </CardHeader>
         <CardContent>
           {book.synopsis && (
