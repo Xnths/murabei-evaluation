@@ -18,7 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { ArrowDownAZ, ArrowUpAZ, Plus } from "lucide-react";
 import { useState } from "react";
 
 export default function Home() {
@@ -30,14 +30,24 @@ export default function Home() {
   const author = searchParams.get("author") || "";
   const pageSize = Number(searchParams.get("pageSize")) || 9;
   const currentPage = Number(searchParams.get("page")) || 1;
+  const alpAsc = searchParams.get("alpAsc") === "true";
 
   const [searchTitle, setSearchTitle] = useState<string>(title);
   const [searchAuthor, setSearchAuthor] = useState<string>(author);
   const [searchPageSize, setSearchPageSize] = useState<number>(pageSize);
+  const [searchIsAlpAsc, setSearchIsAlpAsc] = useState<boolean>(alpAsc);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["books", currentPage, pageSize, q, title, author],
-    queryFn: () => getBooks({ page: currentPage, pageSize, q, title, author }),
+    queryKey: ["books", currentPage, pageSize, q, title, author, alpAsc],
+    queryFn: () =>
+      getBooks({
+        page: currentPage,
+        pageSize,
+        q,
+        title,
+        author,
+        alpAsc: alpAsc.toString(),
+      }),
   });
 
   const totalPages = Math.ceil((data?.total || 1) / pageSize);
@@ -69,6 +79,16 @@ export default function Home() {
   function goToPage(page: number) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", String(page));
+    router.push(`/?${params.toString()}`);
+  }
+
+  function toggleAlpAsc() {
+    const newAlpAsc = !searchIsAlpAsc;
+    setSearchIsAlpAsc(newAlpAsc);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("alpAsc", newAlpAsc.toString());
+    params.set("page", "1");
     router.push(`/?${params.toString()}`);
   }
 
@@ -124,7 +144,21 @@ export default function Home() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Livros</CardTitle>
+              <CardTitle className="flex flex-row justify-between">
+                <span>Livros</span>
+                <Button
+                  onClick={toggleAlpAsc}
+                  size="icon"
+                  variant="outline"
+                  aria-label="Alternar ordenação alfabética"
+                >
+                  {searchIsAlpAsc ? (
+                    <ArrowDownAZ className="size-4" />
+                  ) : (
+                    <ArrowUpAZ className="size-4" />
+                  )}
+                </Button>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex w-full items-center justify-center">
