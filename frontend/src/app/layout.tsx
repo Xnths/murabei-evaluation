@@ -55,7 +55,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased w-screen h-full p-8 flex justify-center items-center flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased max-w-screen h-full p-8 flex justify-center items-center flex-col`}
       >
         <NavigationMenu className="mb-8">
           <NavigationMenuList>
