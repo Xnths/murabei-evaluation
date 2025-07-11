@@ -32,15 +32,32 @@ def create_20_books(client):
 
 @given("the first book was deleted")
 def delete_first_book(client):
-    create_20_books(client)
+    client.post("/api/v1/test/reset")
+    for i in range(1, 21):
+        client.post("/api/v1/books", json={
+            "title": f"Book {i}",
+            "author": f"Author {i}",
+            "author_slug": f"author_{i}",
+            "author_bio": f"{i} is cool",
+            "authors": f"{i},{i+1},{i+2}",
+            "publisher": f"publisher-{i}",
+            "synopsis": f"{i} is amazing",
+            "price": 10.0 + i
+        })
     client.delete("/api/v1/books/1")
 
 
 @given(parsers.parse('there was a book called {title} by {author}'))
 def create_specific_book(client, title, author):
+    client.post("/api/v1/test/reset")
     client.post("/api/v1/books", json={
         "title": title,
         "author": author,
+        "author_slug": "author",
+        "author_bio": "is cool",
+        "authors": author,
+        "publisher": "publisher",
+        "synopsis": "it is amazing",
         "price": 42.00
     })
 
@@ -103,7 +120,6 @@ def check_other_10_books(client):
         assert title not in previous_titles
 
 
-
 @then("from each book, he should get the title, author name and price")
 def check_fields(client):
     books = client.response.get_json()["books"]
@@ -114,9 +130,18 @@ def check_fields(client):
 
 
 @then("he should not see the first book")
+def check_first_book_not_present(client):
+    books = client.response.get_json()["books"]
+    for book in books:
+        assert book['id'] != 1
+
+
 @then("he should not see it")
 def check_book_not_present(client):
     books = client.response.get_json()["books"]
     for book in books:
-        assert book["title"] != "Book 1"
         assert book["title"] != "The color purple"
+
+@then("he should be notified that the book was not found")
+def not_found_book(client):
+    assert client.response.status_code == 404

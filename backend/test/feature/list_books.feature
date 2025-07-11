@@ -33,10 +33,10 @@ Feature: list books
     Given there was a book called The color purple by Alice Walker
     And it was deleted
     When John does an advanced search for the title Alice Walker
-    Then he should not see it
+    Then he should be notified that the book was not found
 
   Scenario: John does an advanced search for a book by author, but he only sees the active ones
     Given there was a book called The color purple by Alice Walker
     And it was deleted
     When John does an advanced search for the author "Alicie Walker"
-    Then he should not see it
+    Then he should be notified that the book was not found

@@ -18,6 +18,27 @@ if __name__ == "__main__":
 def hello_world():
     return "online"
 
+import os
+
+@app.route("/api/v1/test/reset", methods=["POST"])
+def reset_database():
+    if not app.config.get("TESTING", False):
+        abort(403, description="Not allowed outside test environment")
+
+    conn = sqlite3.connect('db.sqlite')
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM book;")
+    
+    cursor.execute("DELETE FROM sqlite_sequence WHERE name='book';")
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Database reset successful."}), 200
+
+
+
 # GET /api/v1/books - returns a list of all books
 @app.route('/api/v1/books', methods=['GET'])
 def get_books_router():
