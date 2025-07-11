@@ -54,3 +54,5 @@ pytest
 ```
 
 Recomenda-se acompanhar o [Example Mapping](https://www.figma.com/board/kFu5Htr3nZndNXy7wtoYje/Untitled?node-id=0-1&t=2tnRx7ZgBrn9Yjuf-1) feito para esse projeto.
+
+**ATENÇÃO**: ao rodar os testes eles irão apagar o banco de dados. Então, após fazer o comando do pytest, recomanda-se rodar novamente o build.bash para copiar a seed para o banco de dados novamente.
