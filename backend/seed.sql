@@ -13,5 +13,5 @@ SELECT
   synopsis, toc, editorial_reviews
 FROM book_backup;
 
-INSERT INTO author_backup
-SELECT * FROM author;
+INSERT INTO author
+SELECT * FROM author_backup;

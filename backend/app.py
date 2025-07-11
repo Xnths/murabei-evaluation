@@ -119,7 +119,7 @@ def books_by_subject_slug_route(subject):
 def get_all_authors_route():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    return jsonify({'authors': get_authors(page, page_size)})
+    return jsonify(get_authors(page, page_size))
 
 # POST /api/v1/books - creates a new book
 
@@ -284,6 +284,9 @@ def get_authors(page, page_size):
     cursor.execute('SELECT * FROM author LIMIT ? OFFSET ?;', (page_size, offset))
     authors = cursor.fetchall()
 
+    cursor.execute('SELECT COUNT(*) FROM author')
+    total_authors = cursor.fetchone()[0]
+
     author_list = []
 
     for author in authors:
@@ -295,7 +298,7 @@ def get_authors(page, page_size):
         author_list.append(author_dict)
 
     conn.close()
-    return author_list
+    return {'authors': author_list, 'total': total_authors}
 
 
 
