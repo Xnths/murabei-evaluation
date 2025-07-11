@@ -6,7 +6,6 @@ import {
 import { getBook } from "../../../lib/http/get-book";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { sanitizeAndTransform } from "@/lib/sanitize-html";
-import { Copy } from "lucide-react";
 import CopyItem from "@/components/copy-item";
 
 interface bookPageRouteProps {
@@ -20,13 +19,17 @@ export default async function bookPageRoute({
 }: bookPageRouteProps) {
   const { book } = await getBook({ bookId });
 
+  const citation = `${book.author.toUpperCase()}. ${book.title}. ${
+    book.edition
+  } ed. ${book.publisher}, ${book.pubdate}.`;
+
   return (
     <div className="p-8">
       <Card>
         <CardHeader className="flex flex-col gap-4">
           <TypographyH1>{book.title}</TypographyH1>
           <TypographyH2>{book.author}</TypographyH2>
-          <CopyItem value="oi" />
+          <CopyItem value={citation} />
         </CardHeader>
         <CardContent>
           {book.synopsis && (
