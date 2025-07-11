@@ -1,6 +1,6 @@
 "use server";
 
-import { Book } from "../../types/books";
+import { Book } from "../../types/book";
 import { api } from "../api";
 
 interface GetBookRequest {

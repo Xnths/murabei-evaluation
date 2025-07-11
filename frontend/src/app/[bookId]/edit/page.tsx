@@ -8,7 +8,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
 import { getBook } from "../../../../lib/http/get-book";
-import { Book } from "../../../../types/books";
+import { Book } from "../../../../types/book";
 import { editBook } from "../../../../lib/http/edit-book";
 import { toast } from "sonner";
 

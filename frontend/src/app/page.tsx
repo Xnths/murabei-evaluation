@@ -99,85 +99,84 @@ export default function Home() {
   if (error) return <div>Erro ao carregar livros</div>;
 
   return (
-    <div className="w-screen h-full p-8 flex justify-center items-center">
-      <div className="w-full lg:w-[1000px]">
-        <div className="flex flex-col justify-center w-full gap-8">
+    <div className="w-full lg:w-[1000px]">
+      <div className="flex flex-col justify-center w-full gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Buscar</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Search />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <AdvancedSearch
+              searchTitle={searchTitle}
+              setSearchTitle={setSearchTitle}
+              searchAuthor={searchAuthor}
+              setSearchAuthor={setSearchAuthor}
+              pageSize={searchPageSize}
+              setPageSize={setSearchPageSize}
+              onApply={() =>
+                applyFilters({
+                  title: searchTitle,
+                  author: searchAuthor,
+                  pageSize: searchPageSize,
+                })
+              }
+            />
+          </CardContent>
+        </Card>
+
+        <div className="flex flex-row gap-4">
           <Link href={createBookPageRoute} className="w-fit">
             <Button className="w-fit">
               <Plus />
               <span>Adicionar livro</span>
             </Button>
           </Link>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Buscar</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Search />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent>
-              <AdvancedSearch
-                searchTitle={searchTitle}
-                setSearchTitle={setSearchTitle}
-                searchAuthor={searchAuthor}
-                setSearchAuthor={setSearchAuthor}
-                pageSize={searchPageSize}
-                setPageSize={setSearchPageSize}
-                onApply={() =>
-                  applyFilters({
-                    title: searchTitle,
-                    author: searchAuthor,
-                    pageSize: searchPageSize,
-                  })
-                }
-              />
-            </CardContent>
-          </Card>
-
-          {showRemoveFiltersButton && (
-            <Button onClick={removeFilters}>Limpar busca</Button>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex flex-row justify-between">
-                <span>Livros</span>
-                <Button
-                  onClick={toggleAlpAsc}
-                  size="icon"
-                  variant="outline"
-                  aria-label="Alternar ordenação alfabética"
-                >
-                  {searchIsAlpAsc ? (
-                    <ArrowDownAZ className="size-4" />
-                  ) : (
-                    <ArrowUpAZ className="size-4" />
-                  )}
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex w-full items-center justify-center">
-                <div className="flex flex-col flex-wrap items-center gap-4 lg:grid grid-cols-3 grid-rows-auto w-fit">
-                  {data?.books?.map((book) => (
-                    <BookCard key={`book-${book.id}`} book={book} />
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <PaginatedNavigation
-                currentPage={currentPage}
-                totalPages={totalPages}
-                goToPage={goToPage}
-              />
-            </CardFooter>
-          </Card>
+          <Button onClick={removeFilters} disabled={!showRemoveFiltersButton}>
+            Limpar busca
+          </Button>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex flex-row justify-between items-center">
+              <span>Livros</span>
+              <Button
+                onClick={toggleAlpAsc}
+                size="icon"
+                variant="outline"
+                aria-label="Alternar ordenação alfabética"
+              >
+                {searchIsAlpAsc ? (
+                  <ArrowDownAZ className="size-4" />
+                ) : (
+                  <ArrowUpAZ className="size-4" />
+                )}
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex w-full items-center justify-center">
+              <div className="flex flex-col flex-wrap items-center gap-4 lg:grid grid-cols-3 grid-rows-auto w-fit">
+                {data?.books?.map((book) => (
+                  <BookCard key={`book-${book.id}`} book={book} />
+                ))}
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <PaginatedNavigation
+              currentPage={currentPage}
+              totalPages={totalPages}
+              goToPage={goToPage}
+            />
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );

@@ -14,7 +14,7 @@ import { PencilIcon, Trash } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteBook } from "../../lib/http/delete-book";
 import { toast } from "sonner";
-import { Book } from "../../types/books";
+import { Book } from "../../types/book";
 
 interface BookCardProps {
   book: Book;
