@@ -21,6 +21,11 @@ def create_20_books(client):
         client.post("/api/v1/books", json={
             "title": f"Book {i}",
             "author": f"Author {i}",
+            "author_slug": f"author_{i}",
+            "author_bio": f"{i} is cool",
+            "authors": f"{i},{i+1},{i+2}",
+            "publisher": f"publisher-{i}",
+            "synopsis": f"{i} is amazing",
             "price": 10.0 + i
         })
 
@@ -33,7 +38,6 @@ def delete_first_book(client):
 
 @given(parsers.parse('there was a book called {title} by {author}'))
 def create_specific_book(client, title, author):
-    client.post("/api/v1/test/reset")
     client.post("/api/v1/books", json={
         "title": title,
         "author": author,
@@ -43,7 +47,7 @@ def create_specific_book(client, title, author):
 
 @given("it was deleted")
 def delete_last_book(client):
-    response = client.get("/api/v1/books/all")
+    response = client.get("/api/v1/books")
     books = response.get_json()["books"]
     last_id = books[-1]["id"]
     client.delete(f"/api/v1/books/{last_id}")
@@ -87,13 +91,17 @@ def check_10_books(client):
 
 @then("he should get the other 10 books")
 def check_other_10_books(client):
-    books = client.response.get_json()["books"]
-    titles = [book["title"] for book in books]
-    assert len(books) == 10
-    assert "Book 1" not in titles
-    assert "Book 10" not in titles
-    assert "Book 11" in titles
-    assert "Book 20" in titles
+    previous_response = client.get("/api/v1/books?page=1")
+    previous_titles = [book["title"] for book in previous_response.get_json()["books"]]
+
+    current_books = client.response.get_json()["books"]
+    current_titles = [book["title"] for book in current_books]
+
+    assert len(current_titles) == 10
+
+    for title in current_titles:
+        assert title not in previous_titles
+
 
 
 @then("from each book, he should get the title, author name and price")

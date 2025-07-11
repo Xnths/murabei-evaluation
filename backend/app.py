@@ -20,55 +20,24 @@ def hello_world():
 
 # GET /api/v1/books - returns a list of all books
 @app.route('/api/v1/books', methods=['GET'])
-def get_books():
+def get_books_router():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     query = request.args.get('q', default="", type=str).strip()
     title = request.args.get('title', default="", type=str).strip()
     author = request.args.get('author', default="", type=str).strip()
 
-    if query:
-        return get_books_by_title_or_author(query=query, page=page, page_size=page_size)
+    filters = {
+        "query": query,
+        "title": title,
+        "author": author
+    }
 
-    books = []
-
-    if title and author:
-        books_by_title = retrive_books_by_title(title)
-        # Filtro explícito por título e autor exatos (usando lower() para igualdade fraca)
-        books = [
-            book for book in books_by_title
-            if author.lower() in book['author'].lower()
-        ]
-    elif title:
-        books = retrive_books_by_title(title)
-    elif author:
-        books = retrive_books_by_author(author)
-
-    if title or author:
-        # Remover duplicatas
-        seen_ids = set()
-        unique_books = []
-        for b in books:
-            if b["id"] not in seen_ids:
-                unique_books.append(b)
-                seen_ids.add(b["id"])
-
-        # Paginação manual
-        total_books = len(unique_books)
-        start = (page - 1) * page_size
-        end = start + page_size
-        paginated_books = unique_books[start:end]
-
-        return jsonify({
-            "books": paginated_books,
-            "total": total_books
-        })
-
-    return jsonify(get_all_books(page=page, page_size=page_size))
+    return jsonify(filter_books(filters, page, page_size))
 
 # GET /api/v1/books/<book_id> - return the book with the given id
 @app.route('/api/v1/books/<book_id>', methods=['GET'])
-def get_book(book_id):
+def get_book_route(book_id):
     book = get_book_by_id(book_id)
 
     # Return the books as a JSON response
@@ -104,33 +73,33 @@ def delete_book_route(book_id):
 
 # GET /api/v1/books/author/<author> - returns a list of all books by the given author
 @app.route('/api/v1/books/author/<author_slug>', methods=['GET'])
-def get_books_by_author(author_slug):
+def get_books_by_author_route(author_slug):
     return jsonify(get_books_by_author_name(author_slug))
 
 # GET /api/v1/books/subject/<subject_slug> - returns a list of all books by the given subject
 @app.route('/api/v1/books/subjects', methods=['GET'])
-def get_books_by_subject():
+def get_books_by_subject_route():
     return jsonify(get_books_by_subject())
 
 # GET /api/v1/books/subjects/<subject_slug> - returns a list of books by the given subject
 
 
 @app.route('/api/v1/books/subjects/<subject>', methods=['GET'])
-def books_by_subject_slug(subject):
+def books_by_subject_slug_route(subject):
     return jsonify(get_books_by_subject_slug(subject))
 
 # GET /api/v1/authors - returns a list of all authors
 
 
 @app.route('/api/v1/authors', methods=['GET'])
-def get_all_authors():
+def get_all_authors_route():
     return jsonify(get_authors())
 
 # POST /api/v1/books - creates a new book
 
 
 @app.route('/api/v1/books', methods=['POST'])
-def create_book():
+def create_book_route():
 
     # Get the book data from the request body
     book_data = request.get_json()
@@ -447,6 +416,53 @@ def delete_book(book_id):
     )
     conn.commit()
     conn.close()
+
+def filter_books(filters, page=1, page_size=10):
+    conn = sqlite3.connect('db.sqlite')
+    cursor = conn.cursor()
+
+    clauses = ["active = 1"]
+    params = []
+
+    if filters["query"]:
+        clauses.append("(title LIKE ? OR author LIKE ?)")
+        like = f"%{filters['query']}%"
+        params.extend([like, like])
+    else:
+        if filters["title"]:
+            clauses.append("title LIKE ?")
+            params.append(f"%{filters['title']}%")
+        if filters["author"]:
+            clauses.append("author LIKE ?")
+            params.append(f"%{filters['author']}%")
+
+    where_clause = " AND ".join(clauses)
+    offset = (page - 1) * page_size
+
+    # Contagem total
+    count_query = f"SELECT COUNT(*) FROM book WHERE {where_clause};"
+    cursor.execute(count_query, params)
+    total = cursor.fetchone()[0]
+
+    # Consulta com paginação
+    select_query = f"SELECT * FROM book WHERE {where_clause} LIMIT ? OFFSET ?;"
+    cursor.execute(select_query, params + [page_size, offset])
+    books = cursor.fetchall()
+
+    conn.close()
+
+    book_list = []
+    for book in books:
+        book_dict = {
+            'id': book[0],
+            'title': book[1],
+            'author': book[2],
+            'price': book[10],
+            'biography': book[4],
+        }
+        book_list.append(book_dict)
+
+    return {"books": book_list, "total": total}
 
 
 # # GET /api/v1/books
