@@ -50,11 +50,6 @@ export default function RootLayout({
       title: "Autores",
       href: "/authors",
     },
-    {
-      id: 3,
-      title: "Gêneros",
-      href: "/subjects",
-    },
   ];
 
   return (

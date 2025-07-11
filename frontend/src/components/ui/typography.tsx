@@ -24,6 +24,14 @@ export function TypographyH2({
   );
 }
 
+export function TypographyH3({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+      {children}
+    </h3>
+  );
+}
+
 export function TypographyP({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <p className="indent-4 leading-7 [&:not(:first-child)]:mt-6">{children}</p>

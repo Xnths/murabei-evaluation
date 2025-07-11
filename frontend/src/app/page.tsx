@@ -30,7 +30,7 @@ export default function Home() {
   const author = searchParams.get("author") || "";
   const pageSize = Number(searchParams.get("pageSize")) || 9;
   const currentPage = Number(searchParams.get("page")) || 1;
-  const alpAsc = searchParams.get("alpAsc") === "true";
+  const alpAsc = !(searchParams.get("alpAsc") === "false");
 
   const [searchTitle, setSearchTitle] = useState<string>(title);
   const [searchAuthor, setSearchAuthor] = useState<string>(author);
