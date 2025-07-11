@@ -160,7 +160,8 @@ def get_all_books(page=1, page_size=10):
             'id': book[0],
             'title': book[1],
             'author': book[2],
-            'biography': book[4]
+            'price': book[10],
+            'biography': book[4],
         }
         book_list.append(book_dict)
 
