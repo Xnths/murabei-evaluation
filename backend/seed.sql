@@ -12,3 +12,6 @@ SELECT
   lexile, pages, dimensions, overview, excerpt,
   synopsis, toc, editorial_reviews
 FROM book_backup;
+
+INSERT INTO author_backup
+SELECT * FROM author;

@@ -18,8 +18,6 @@ if __name__ == "__main__":
 def hello_world():
     return "online"
 
-import os
-
 @app.route("/api/v1/test/reset", methods=["POST"])
 def reset_database():
     if not app.config.get("TESTING", False):
@@ -31,6 +29,10 @@ def reset_database():
     cursor.execute("DELETE FROM book;")
     
     cursor.execute("DELETE FROM sqlite_sequence WHERE name='book';")
+
+    cursor.execute("DELETE FROM author;")
+    
+    cursor.execute("DELETE FROM sqlite_sequence WHERE name='author';")
 
     conn.commit()
     conn.close()
@@ -115,7 +117,9 @@ def books_by_subject_slug_route(subject):
 
 @app.route('/api/v1/authors', methods=['GET'])
 def get_all_authors_route():
-    return jsonify(get_authors())
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    return jsonify({'authors': get_authors(page, page_size)})
 
 # POST /api/v1/books - creates a new book
 
@@ -123,10 +127,17 @@ def get_all_authors_route():
 @app.route('/api/v1/books', methods=['POST'])
 def create_book_route():
 
-    # Get the book data from the request body
     book_data = request.get_json()
 
     return jsonify(create_new_book(book_data))
+
+@app.route('/api/v1/authors', methods=['POST'])
+def create_author_route():
+
+    book_data = request.get_json()
+
+    return jsonify(create_new_author(book_data))
+
 
 
 def get_all_books(page=1, page_size=10):
@@ -264,12 +275,13 @@ def get_books_by_title_or_author(query, page=1, page_size=10):
 
     return jsonify({'books': book_list, 'total': total_books})
 
-def get_authors():
+def get_authors(page, page_size):
     conn = sqlite3.connect('db.sqlite')
     cursor = conn.cursor()
 
-    # Execute a SELECT query to fetch all authors
-    cursor.execute('SELECT * FROM author;')
+    offset = (page - 1) * page_size
+
+    cursor.execute('SELECT * FROM author LIMIT ? OFFSET ?;', (page_size, offset))
     authors = cursor.fetchall()
 
     author_list = []
@@ -277,17 +289,14 @@ def get_authors():
     for author in authors:
         author_dict = {
             'id': author[0],
-            'title': author[1],
-            'slug': author[2],
+            'name': author[1],
             'biography': author[3]
         }
         author_list.append(author_dict)
 
-    # Close the database connection
     conn.close()
-
-    # Return the authors as a JSON response
     return author_list
+
 
 
 def get_books_by_author_name(author_slug):
@@ -370,7 +379,6 @@ def get_books_by_subject_slug(subject):
     # Return the books as a JSON response
     return book_list
 
-
 def create_new_book(book_data):
     conn = sqlite3.connect('db.sqlite')
     cursor = conn.cursor()
@@ -387,6 +395,27 @@ def create_new_book(book_data):
     # Execute a query to create a new book
     cursor.execute('INSERT INTO book (title, author, author_slug, author_bio, authors, publisher, synopsis) VALUES (?, ?, ?, ?, ?, ?, ?);',
                    (title, author, author_slug, author_bio, authors, publisher, synopsis))
+
+    # Commit the changes to the database
+    conn.commit()
+
+    # Close the database connection
+    conn.close()
+
+    # Return a message to the user
+    return {'message': 'Book created successfully.'}, 201
+
+def create_new_author(book_data):
+    conn = sqlite3.connect('db.sqlite')
+    cursor = conn.cursor()
+
+    # Get the book data from the request body
+    name = book_data['name']
+    biography = book_data['biography']
+
+    # Execute a query to create a new book
+    cursor.execute('INSERT INTO author (title, biography) VALUES (?, ?);',
+                   (name, biography))
 
     # Commit the changes to the database
     conn.commit()
