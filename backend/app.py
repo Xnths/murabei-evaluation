@@ -47,6 +47,7 @@ def get_books_router():
     query = request.args.get('q', default="", type=str).strip()
     title = request.args.get('title', default="", type=str).strip()
     author = request.args.get('author', default="", type=str).strip()
+    alp_asc = request.args.get('alp_asc', default="true", type=str).lower() == "true"
 
     filters = {
         "query": query,
@@ -54,7 +55,7 @@ def get_books_router():
         "author": author
     }
 
-    return jsonify(filter_books(filters, page, page_size))
+    return jsonify(filter_books(filters, page, page_size, alp_asc))
 
 # GET /api/v1/books/<book_id> - return the book with the given id
 @app.route('/api/v1/books/<book_id>', methods=['GET'])
@@ -438,7 +439,7 @@ def delete_book(book_id):
     conn.commit()
     conn.close()
 
-def filter_books(filters, page=1, page_size=10):
+def filter_books(filters, page=1, page_size=10, alp_asc=True):
     conn = sqlite3.connect('db.sqlite')
     cursor = conn.cursor()
 
@@ -460,13 +461,17 @@ def filter_books(filters, page=1, page_size=10):
     where_clause = " AND ".join(clauses)
     offset = (page - 1) * page_size
 
-    # Contagem total
     count_query = f"SELECT COUNT(*) FROM book WHERE {where_clause};"
     cursor.execute(count_query, params)
     total = cursor.fetchone()[0]
 
-    # Consulta com paginação
-    select_query = f"SELECT * FROM book WHERE {where_clause} LIMIT ? OFFSET ?;"
+    order_clause = "ORDER BY title ASC" if alp_asc else "ORDER BY title DESC"
+    select_query = f"""
+        SELECT * FROM book 
+        WHERE {where_clause}
+        {order_clause}
+        LIMIT ? OFFSET ?;
+    """
     cursor.execute(select_query, params + [page_size, offset])
     books = cursor.fetchall()
 
@@ -484,35 +489,3 @@ def filter_books(filters, page=1, page_size=10):
         book_list.append(book_dict)
 
     return {"books": book_list, "total": total}
-
-
-# # GET /api/v1/books
-# @app.route("/api/v1/books", methods=["GET"])
-# def get_books():
-
-#     conn = sqlite3.connect('db.sqlite')
-#     cursor = conn.cursor()
-
-#     # Execute a SELECT query to fetch all books
-#     cursor.execute('SELECT * FROM book;')
-#     books = cursor.fetchall()
-
-#     # Convert the books data to a list of dictionaries
-#     book_list = []
-#     for book in books:
-#         book_dict = {
-#             'id': book[0],
-#             'title': book[1],
-#             'author': book[2],
-#             'year': book[3],
-#             'genre': book[4]
-#         }
-#         book_list.append(book_dict)
-
-#     # Close the database connection
-#     conn.close()
-
-#     # Return the books as a JSON response
-#     return jsonify(book_list)
-
-# # GET /api/v1/authors
