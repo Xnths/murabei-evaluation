@@ -162,8 +162,13 @@ def get_all_books(page=1, page_size=10):
             'id': book[0],
             'title': book[1],
             'author': book[2],
+            'authors': book[5],
             'price': book[10],
             'biography': book[4],
+            'synopsis': book[22],
+            'edition': book[14],
+            'publisher': book[12],
+            'pubdate': book[13]
         }
         book_list.append(book_dict)
 
