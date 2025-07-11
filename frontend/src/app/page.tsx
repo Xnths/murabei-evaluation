@@ -130,12 +130,7 @@ export default function Home() {
               <div className="flex w-full items-center justify-center">
                 <div className="flex flex-col flex-wrap items-center gap-4 lg:grid grid-cols-3 grid-rows-auto w-fit">
                   {data?.books?.map((book) => (
-                    <BookCard
-                      key={book.id}
-                      id={book.id}
-                      title={book.title}
-                      author={book.author}
-                    />
+                    <BookCard key={`book-${book.id}`} book={book} />
                   ))}
                 </div>
               </div>
